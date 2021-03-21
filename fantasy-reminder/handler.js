@@ -1,6 +1,6 @@
 'use strict';
 
-const addPhoneNumber = async (event, context) => {
+const addUser = async (event, context) => {
   const phoneNumber = JSON.parse(event.body)
   if (invalidPhoneNumber(phoneNumber)) {
     return {
@@ -30,5 +30,5 @@ const invalidPhoneNumber = phoneNumber => {
 }
 
 module.exports = {
-  addPhoneNumber
+  addUser
 }
