@@ -23,13 +23,22 @@ provider:
   name: aws
   runtime: nodejs14.x
   stage: production
-  region: eu-west-2
+  region: eu-west-1
 
 # you can add statements to the Lambda function's IAM Role here
 iamRoleStatements:
   - Effect: "Allow"
     Action:
-      - "cloudwatch:PutMetricData"
+      - cloudwatch:PutMetricData
+      - dynamodb:GetItem
+      - dynamodb:PutItem
+      - dynamodb:UpdateItem
+      - dynamodb:Query
+      - dynamodb:Scan
+      - dynamodb:BatchGetItem
+      - dynamodb:BatchWriteItem
+      - dynamodb:ConditionCheckItem
+      - dynamodb:DeleteItem
     Resource:
       - "*"
 
@@ -40,6 +49,7 @@ package:
 
 functions:
   add-user:
+    description: Adds a user to the dynamoDB table
     handler: handler.addUser
     events:
       - http:
@@ -56,22 +66,50 @@ resources:
   Resources:
     usersTable:
       Type: AWS::DynamoDB::Table
-      BillingMode: PAY_PER_REQUEST
       Properties:
         TableName: usersTable
+        BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
-          - AttributeName: email
+          - AttributeName: phoneNumber
+            AttributeType: S
+          - AttributeName: active
+            AttributeType: S
+          - AttributeName: language
             AttributeType: S
         KeySchema:
-          - AttributeName: email
+          - AttributeName: phoneNumber
             KeyType: HASH
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
+          - AttributeName: active
+            KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: "active-language-index"
+            KeySchema:
+              - AttributeName: language
+                KeyType: HASH
+              - AttributeName: active
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: "active-phoneNumbers-index"
+            KeySchema:
+              - AttributeName: active
+                KeyType: HASH
+              - AttributeName: phoneNumber
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
 
 custom:
-  customDomain:
-    domainName: fantasyfootballreminder.com
+  prune:
+    automatic: true
+    number: 10
+  domain:
+    production: fantasy.footballreminder.com
+  # customDomain:
+  #   domainName: ${self:custom.domain.${self:provider.stage}}
+  #   basePath: ""
+  #   certificateName: "*.footballreminder.com"
+  #   createRoute53Record: true
 
 plugins:
-  - serverless-domain-manager
+  - serverless-prune-plugin
