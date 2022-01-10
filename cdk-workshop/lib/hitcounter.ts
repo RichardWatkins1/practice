@@ -1,4 +1,3 @@
-import { Stack } from 'aws-cdk-lib';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
@@ -9,8 +8,7 @@ export interface HitCounterProps {
   downstream: lambda.IFunction;
 }
 
-
-export class HitCounter extends Stack {
+export class HitCounter extends Construct {
   /** allows accessing the counter function */
   public readonly handler: lambda.Function;
   
@@ -26,10 +24,11 @@ export class HitCounter extends Stack {
       handler: 'hitcounter.handler',
       code: lambda.Code.fromAsset('lambda'),
       environment: {
-          DOWNSTREAM_FUNCTION_NAME: props.downstream.functionName,
-          HITS_TABLE_NAME: table.tableName
+        DOWNSTREAM_FUNCTION_NAME: props.downstream.functionName,
+        HITS_TABLE_NAME: table.tableName
       }
     });
-    
+
+    table.grantReadWriteData(this.handler)
   }
 }
