@@ -23,6 +23,7 @@
     "@aws-cdk/aws-apigateway": "^1.138.1",
     "aws-cdk-lib": "2.4.0",
     "aws-sdk": "^2.1053.0",
+    "cdk-dynamo-table-viewer": "^0.2.0",
     "constructs": "^10.0.0"
   }
 }
